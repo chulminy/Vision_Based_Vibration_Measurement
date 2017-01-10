@@ -70,7 +70,8 @@ if DEBUG
     figure(2);
     line(pt_X(ptMap'),pt_Y(ptMap'),'color','b', 'linewidth', 3);hold on;
     plot(pt_X, pt_Y,'or','linewidth',3);
-    text(pt_X+15, pt_Y+45,arrayfun(@num2str, 1:28, 'unif', 0),'FontSize',14); hold off;
+    text(pt_X+15, pt_Y+45,arrayfun(@num2str, 1:28, 'unif', 0), ...
+        'FontSize',14); hold off;
     clearvars ii point_X point_Y;
 end
 
@@ -143,14 +144,16 @@ for imgIdx = 1: nImg  % image number
         stats     = regionprops(imgTempBW,'Centroid','Perimeter','Area');
         
         % center loc. of a detected blob
-        center = bsxfun(@plus, cell2mat({stats.Centroid}'),[0 targetH(1)-1]);
+        center = bsxfun(@plus, cell2mat({stats.Centroid}'), ...
+                        [0 targetH(1)-1]);
 
         % how much area is a detected blob
         areas = [stats.Area]';
         
         % how much circular is the shape of a detected blob
         perimeter   = [stats.Perimeter]';
-        circularity = bsxfun(@(A,B) A.^2./(4*pi*B),perimeter, areas); clearvars perimeter;
+        circularity = bsxfun(@(A,B) A.^2./(4*pi*B),perimeter, areas); 
+        clearvars perimeter;
         
         % y locations
         yrange = round(bsxfun(@minus,center(:,2), iniLocH(rowIdx)));
@@ -158,17 +161,23 @@ for imgIdx = 1: nImg  % image number
         % assign locations to LocPt
         if size(center, 1) < 7
             if k>1 % use the previously estimated location
-                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx) = LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx-1);
+                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx) ...
+                    = LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx-1);
             else % fail to detect blobs at the first image
-                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,1) = [iniLocW' iniLocH(rowIdx)*ones(7,1)]; 
+                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,1) = ...
+                    [iniLocW' iniLocH(rowIdx)*ones(7,1)]; 
             end
         else
             
             % Condition 1: circularity and yrange variation
             % in other word, find almost circle blob with close to original
             % y location
-            indR =  (abs(circularity-1)< 1); % circularity should be close to 1
-            indC =  (abs(yrange) < 30);      % y locations should not be more than 5 pixels from the original y location
+            % circularity should be close to 1
+            indR =  (abs(circularity-1)< 1); 
+            
+            % y locations should not be more than 5 pixels from the
+            % original y location
+            indC =  (abs(yrange) < 30);      
             ind  =  and(indR , indC);  % satisfy the both conditions
             ind  =  find(ind == 1); clearvars indR indC;
             
@@ -185,14 +194,20 @@ for imgIdx = 1: nImg  % image number
             LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx) = center(indX,:);
             
             % One last condition is that pixel movement should not be more
-            % than "targetLargeMovement" pixels because those are typically errorneous estimation. 
-            % if more than "targetLargeMovement" pixels, use previously estimated value.
+            % than "targetLargeMovement" pixels because those are typically
+            % errorneous estimation. if more than "targetLargeMovement"
+            % pixels, use previously estimated value.
             if imgIdx>1 && ...
-                    any(abs(LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx) - LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx-1)) > targetLargeMovement);
-                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx) = LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx-1);
+                    any(abs(LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx) ...
+                    - LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx-1)) ...
+                    > targetLargeMovement);
+                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx) = ...
+                    LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,imgIdx-1);
             elseif imgIdx==1 && ...
-                    any(abs(LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx) - iniLocW' ) > targetLargeMovement);
-                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,1) = [iniLocW' iniLocH(rowIdx)*ones(7,1)];
+                    any(abs(LocPt(1+(rowIdx-1)*7:(rowIdx)*7,1,imgIdx) - ...
+                    iniLocW' ) > targetLargeMovement);
+                LocPt(1+(rowIdx-1)*7:(rowIdx)*7,:,1) = ...
+                    [iniLocW' iniLocH(rowIdx)*ones(7,1)];
             end
         end
     end
@@ -221,25 +236,26 @@ for imgIdx = 1: nImg  % image number
     % 433: stick figure ---------------------------------------------------
     subplot(4,3, [3 6]);
     xdisp =squeeze(LocPt([22:28],1,1:imgIdx));
-    plot((1:imgIdx)/camerafs,xdisp-xdisp(:,1)*ones(1,imgIdx),'lineWidth',2);
-    ylabel('\bf X disp. at the left colum (px)','FontSize',12, 'fontweight','bold');
+    plot((1:imgIdx)/camerafs,xdisp-xdisp(:,1)*ones(1,imgIdx),...
+        'lineWidth',2);
+    ylabel('\bf X disp. at the left colum (px)','FontSize',12, ...
+           'fontweight','bold');
     set(gca,'fontsize',12,'linewidth',2,'fontweight','bold'); grid on;
     
     subplot(4,3, [9 12]);
     xdisp = squeeze(LocPt([1 8 15 22],1,1:imgIdx));
-    plot((1:imgIdx)/camerafs,xdisp-xdisp(:,1)*ones(1,imgIdx),'lineWidth',2);
+    plot((1:imgIdx)/camerafs,xdisp-xdisp(:,1)*ones(1,imgIdx), ...
+        'lineWidth',2);
     xlabel('\bf Time(s)','FontSize',12, 'fontweight','bold');
-    ylabel('\bf X disp. at the top floor (px)','FontSize',12, 'fontweight','bold');
+    ylabel('\bf X disp. at the top floor (px)','FontSize',12, ...
+           'fontweight','bold');
     set(gca,'fontsize',12,'linewidth',2,'fontweight','bold'); grid on;
     
     set(fig, 'pos',[20 50 1500 600]);hold off; 
     
-%     F = im2frame(zbuffer_cdata(fig));
-%     
-%     writeVideo(outputVideo,F);
     writeVideo(outputVideo,getframe(fig));
-    print(fullfile('C:\Users\Chulmin\Documents\GitHub\Vision_Based_Vibration_Measurement\post',['video_img' int2str(imgIdx)]),'-djpeg','-r0')
+    
     fprintf('Processing (%d / %d)\n', imgIdx, nImg);
 end
-disp('complete!!');
+disp('Complete!!');
 close(outputVideo);
