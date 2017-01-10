@@ -2,8 +2,10 @@
 
 ![](post/layout.jpg)
 
+
 ## Description
-I took a video of a moving building structural model to capture the displacements on key locations. Fiducial targets (black dots) are installed on the key locations, and their locations in each frame of the video are obtained using image processing methods. Assuming that the structure has only in-plane motion, the pixel coordinate of the key locations can be converted to a physical displacement. This work can give you a basic idea of how vision-based displacement measurement works. 
+I took a video of a moving building structural model to capture the displacements on key locations. Fiducial targets (black dots) are installed on the key locations, and their locations in each frame of the video are obtained using image processing methods. Assuming that the structure has only in-plane motion, the pixel coordinate of the key locations can be converted to a physical displacement. This work can give you a basic idea of how vision-based displacement measurement works. **[See the video](https://youtu.be/bV7cNfGcLhY?list=PLa1nAPP8qUX8bBfN8ZCufGaL4M5sYeOXL)**
+
 
 ## Source Code & Data
 * All source code and data are released in this repository. 
